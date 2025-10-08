@@ -1,10 +1,11 @@
 function main() {
   try {
 
-    if (process.argv.length < 5) {
+    console.log(process.argv.length);
+    if (process.argv.length < 8) {
       console.log('引数が足りていません。');
       console.log('');
-      console.log('使用方法: node time.js <所定出勤日数> <繰越時間> <休暇> <実出勤日数> <総労働時間>');
+      console.log('使用方法: node time.js <勤務開始時間> <所定出勤日数> <繰越時間> <休暇> <実出勤日数> <総労働時間>');
       console.log('');
       console.log('引数の説明:');
       console.log('  <所定出勤日数>: TS記載の3ヶ月の所定出勤日数。例) "[20,21,19]"');
@@ -17,31 +18,35 @@ function main() {
       console.log('  出勤中はややこしいので退勤後に実行してね');
       console.log('');
       console.log('使用例:');
-      console.log('  node time.js "[20,21,19]" "8:30" "[9/1,10/3,1/30]" "2" "160:00"');
+      console.log('  node time.js "9:25" "[20,21,19]" "8:30" "[9/1,10/3,1/30]" "2" "160:00"');
       return;
     }
 
+    // -------------------- 本日 --------------------
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     // -------------------- 引数格納 --------------------
-    const needWorkDayCountList = process.argv[2]
+    const startTime = convertTimeStringToMinutes(process.argv[2])
+    const needWorkDayCountList = process.argv[3]
       .replace(/[\[\]]/g, '')
       .split(',')
       .map(str => parseInt(str.trim()))
       .filter(num => !isNaN(num));
 
-    const carryoverMinutes = convertTimeStringToMinutes(process.argv[3])
-    const holidays = convertMMDDToDateMap(process.argv[4], today)
-    const workedDayCount = parseInt(process.argv[5])
-    const totalWorkedMinutesInToMonth = convertTimeStringToMinutes(process.argv[6])
+    const carryoverMinutes = convertTimeStringToMinutes(process.argv[4])
+    const holidays = convertMMDDToDateMap(process.argv[5], today)
+    const workedDayCount = parseInt(process.argv[6])
+    const totalWorkedMinutesInToMonth = convertTimeStringToMinutes(process.argv[7])
 
     // -------------------- 入力内容出力 --------------------
-    console.log(`入力内容`);
+    console.log(`-------------- 入力内容 ------------------`);
+    console.log(`勤務開始時間=> ${convertMinutesToTimeString(startTime)}`);
+    console.log(`所定出勤日数=> ${needWorkDayCountList}`);
     console.log(`所定出勤日数=> ${needWorkDayCountList}`);
     console.log(`繰越時間=> ${convertMinutesToTimeString(carryoverMinutes)}`);
     console.log(`休暇=> ${getHolidayStrings(holidays)}`);
-    console.log(`実出勤日数(今月:休暇は含まない)=> ${workedDayCount}日`);
-    console.log(`総労働時間(今月:有給+8,半休+4で加算されている))=> ${convertMinutesToTimeString(totalWorkedMinutesInToMonth)}`);
+    console.log(`実出勤日数=> ${workedDayCount}日`);
+    console.log(`総労働時間=> ${convertMinutesToTimeString(totalWorkedMinutesInToMonth)}`);
 
     console.log(`実行日=> ${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`);
 
@@ -52,8 +57,10 @@ function main() {
     const remainingWorkMinutes = calculateRemainingWorkMinutes(needWorkDayCountList, totalWorkedMinutes);
     const dailyRequiredWorkMinutes = calculateDailyRequiredWorkMinutes(remainingWorkMinutes, enableWorkDays);
     const dailyLimitWorkMinutes = calculateDailyRequiredWorkMinutes(remainingWorkMinutes + 1200, enableWorkDays);
-    console.log(`1日の平均必要労働時間=> ${convertMinutesToTimeString(dailyRequiredWorkMinutes)}`);
-    console.log(`1日の平均最大労働時間=> ${convertMinutesToTimeString(dailyLimitWorkMinutes)}`);
+    console.log(`-------------- 結果 ------------------`);
+    console.log(`1日の平均必要労働時間=> ${convertMinutesToTimeString(dailyRequiredWorkMinutes)} (勤務終了時間: ${calculateEndTime(startTime, dailyRequiredWorkMinutes + 60)})`);
+    console.log(`1日の平均最大労働時間=> ${convertMinutesToTimeString(dailyLimitWorkMinutes)} (勤務終了時間: ${calculateEndTime(startTime, dailyLimitWorkMinutes + 60)})`);
+    console.log(`-------------- 使用は自己責任でお願いしますね ------------------`);
   } catch (error) {
     console.error('エラー:', error.message);
     process.exit(1);
@@ -183,4 +190,11 @@ function isCurrentMonthHoliday(holidayDate, today) {
 
   // 今月かどうかを判定
   return holidayYear === todayYear && holidayMonth === todayMonth;
+}
+
+function calculateEndTime(startTimeMinutes, workMinutes) {
+  const endTotalMinutes = startTimeMinutes + workMinutes;
+  const endHour = Math.floor(endTotalMinutes / 60) % 24;
+  const endMinute = endTotalMinutes % 60;
+  return `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
 }
