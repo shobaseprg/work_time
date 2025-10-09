@@ -1,7 +1,6 @@
 function main() {
   try {
 
-    console.log(process.argv.length);
     if (process.argv.length < 8) {
       console.log('引数が足りていません。');
       console.log('');
@@ -41,7 +40,6 @@ function main() {
     // -------------------- 入力内容出力 --------------------
     console.log(`-------------- 入力内容 ------------------`);
     console.log(`勤務開始時間=> ${convertMinutesToTimeString(startTime)}`);
-    console.log(`所定出勤日数=> ${needWorkDayCountList}`);
     console.log(`所定出勤日数=> ${needWorkDayCountList}`);
     console.log(`繰越時間=> ${convertMinutesToTimeString(carryoverMinutes)}`);
     console.log(`休暇=> ${getHolidayStrings(holidays)}`);
