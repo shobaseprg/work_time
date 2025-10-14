@@ -17,7 +17,7 @@ function main() {
       console.log('  出勤中はややこしいので退勤後に実行してね');
       console.log('');
       console.log('使用例:');
-      console.log('  node time.js "9:25" "[20,21,19]" "8:30" "[9/1,10/3,1/30]" "2" "160:00"');
+      console.log('node time.js 9:25 "[20,21,19]" 8:30 "[9/1,10/3,1/30]" 2 160:00');
       return;
     }
 
