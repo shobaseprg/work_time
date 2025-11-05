@@ -81,11 +81,11 @@ function calculateTotalWorkedMinutes(monthPosition, totalWorkedTimeInToMonth, ca
     return totalWorkedTimeInToMonth;
   } else if (monthPosition === 1) {
     const firstMonthWorkMinutes = needWorkDayCountList[0] * 480; // 初月の所定労働時間（分）
-    return firstMonthWorkMinutes - carryoverMinutes + totalWorkedTimeInToMonth;
+    return firstMonthWorkMinutes + carryoverMinutes + totalWorkedTimeInToMonth;
   } else if (monthPosition === 2) {
     const firstMonthWorkMinutes = needWorkDayCountList[0] * 480; // 初月の所定労働時間（分）
     const secondMonthWorkMinutes = needWorkDayCountList[1] * 480; // 真ん中の月の所定労働時間（分）
-    return firstMonthWorkMinutes + secondMonthWorkMinutes - carryoverMinutes + totalWorkedTimeInToMonth;
+    return firstMonthWorkMinutes + secondMonthWorkMinutes + carryoverMinutes + totalWorkedTimeInToMonth;
   }
 }
 
