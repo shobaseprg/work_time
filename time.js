@@ -22,6 +22,23 @@ function main() {
       return;
     }
 
+    // -------------------- 引数をクリップボードに保存 --------------------
+    const { execSync } = require('child_process');
+    const args = process.argv.slice(2).map(arg => {
+      // []を含む引数は""で囲む
+      if (arg.includes('[') || arg.includes(']')) {
+        return `"${arg}"`;
+      }
+      return arg;
+    });
+    const fullCommand = `node time.js ${args.join(' ')}`;
+    try {
+      // printfを使って安全にクリップボードに保存
+      execSync(`printf '%s' ${JSON.stringify(fullCommand)} | pbcopy`, { encoding: 'utf8' });
+      console.log('コマンドをクリップボードに保存しました。');
+    } catch (error) {
+      console.log('クリップボードへの保存に失敗しました。');
+    }
     // -------------------- 本日 --------------------
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -60,6 +77,8 @@ function main() {
     console.log(`1日の平均必要労働時間=> ${convertMinutesToTimeString(dailyRequiredWorkMinutes)} (勤務終了時間: ${calculateEndTime(startTime, dailyRequiredWorkMinutes + 60)})`);
     console.log(`1日の平均最大労働時間=> ${convertMinutesToTimeString(dailyLimitWorkMinutes)} (勤務終了時間: ${calculateEndTime(startTime, dailyLimitWorkMinutes + 60)})`);
     console.log(`-------------- 使用は自己責任でお願いしますね ------------------`);
+    console.log(`-------------- 実行コマンド↓どこかに貼り付けておくと明日いいことあるかも ------------------`);
+    console.log(`${fullCommand}`);
   } catch (error) {
     console.error('エラー:', error.message);
     process.exit(1);
